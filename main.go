@@ -90,11 +90,9 @@ func TranslateHandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  // Create a buffered channel for receiving the result from the goroutine
   resultCh := make(chan string, 1)
   errorCh := make(chan error, 1)
 
-  // Start a new goroutine for translation
   go func() {
     result, err := translate(req.Text, req.SourceLang, req.TargetLang)
     if err != nil {
@@ -104,7 +102,6 @@ func TranslateHandler(w http.ResponseWriter, r *http.Request) {
     resultCh <- result
   }()
 
-  // Wait for the result from the goroutine
   select {
   case result := <-resultCh:
     responseData := TranslationResponse{
