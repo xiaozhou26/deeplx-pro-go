@@ -3,6 +3,8 @@
 
 使用 DeepL Pro的翻译服务
 
+# 直接使用，畅行无阻。
+
 ## 如何使用这个镜像
 
 ### 拉取镜像
@@ -21,7 +23,8 @@ docker pull xiaoxiaofeihh/deeplx-pro:latest
 docker run -d -p 9000:9000 xiaoxiaofeihh/deeplx-pro:latest
 ```
 
-在这个命令中，`-d`选项让Docker在后台运行这个镜像，`-p`选项将容器的8080端口映射到主机的8080端口。
+然后使用http://localhost:9000/translate
+就可以愉快使用了
 
 ## 构建你自己的镜像
 
