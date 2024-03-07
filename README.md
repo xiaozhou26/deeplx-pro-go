@@ -19,6 +19,8 @@ docker pull xiaoxiaofeihh/deeplx-pro:latest
 
 你可以使用以下命令运行这个镜像：
 
+![DeepL翻译API示例代码](https://jsd.cdn.zzko.cn/gh/xiaozhou26/tuph@main/images/2024-03-07%20120245.png)
+
 ```bash
 docker run -d -p 9000:9000 -e COOKIE_VALUE="dl_session=你的dl_session" --name deeplx_pro xiaoxiaofeihh/deeplx-pro:latest
 ```
