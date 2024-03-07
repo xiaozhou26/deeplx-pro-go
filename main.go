@@ -7,7 +7,7 @@ import (
   "net/http"
   "strings"
   "time"
-
+  "os"
   "github.com/gorilla/mux"
   "github.com/valyala/fasthttp"
 )
@@ -17,7 +17,8 @@ const (
   PORT           = 9000
 )
 
-var cookieValue = "dl_session=40ef9830-ced3-4f4b-b391-35b98479110f"
+
+var cookieValue = os.Getenv("COOKIE_VALUE")
 var headers = map[string]string{
   "Content-Type":             "application/json",
   "Accept":                   "*/*",
