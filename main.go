@@ -2,11 +2,11 @@ package main
 
 import (
   "encoding/json"
-  "fmt"
   "math/rand"
   "net/http"
   "strings"
   "time"
+  "fmt"
   "os"
   "github.com/gorilla/mux"
   "github.com/valyala/fasthttp"
@@ -19,6 +19,7 @@ const (
 
 
 var cookieValue = os.Getenv("COOKIE_VALUE")
+
 var headers = map[string]string{
   "Content-Type":             "application/json",
   "Accept":                   "*/*",
