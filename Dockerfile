@@ -1,22 +1,16 @@
-
-FROM golang:latest
-
-
-
-
+FROM golang:1.19 as builder
 
 WORKDIR /app
 
-
-COPY go.mod go.sum ./
-
-RUN go mod download 
-
 COPY . .
 
+RUN go mod download && go build -o main .
 
-RUN go build -o main .
+FROM golang:1.19
 
+WORKDIR /app
+
+COPY --from=builder /app/main .
 
 EXPOSE 9000
 
