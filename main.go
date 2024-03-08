@@ -18,6 +18,7 @@ const (
 )
 
 
+
 var cookieValue = os.Getenv("COOKIE_VALUE")
 
 var headers = map[string]string{
