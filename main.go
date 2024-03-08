@@ -75,6 +75,9 @@ func main() {
   r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, "Welcome to deeplx-pro")
   }).Methods("GET")
+  r.HandleFunc("/translate", func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, "This is a translate api")
+  }).Methods("GET")
 
   r.HandleFunc("/translate", TranslateHandler).Methods("POST")
 
