@@ -2,7 +2,6 @@ package initialize
 
 import (
 	"deeplx-pro/translator"
-	"log"
 	"math/rand"
 	"net/http"
 
@@ -34,8 +33,13 @@ func InitRouter() *gin.Engine {
 
 		// 绑定JSON请求体
 		if err := c.ShouldBindJSON(&reqBody); err != nil {
-			log.Printf("Invalid request body: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body", "details": err.Error()})
+			return
+		}
+
+		// 检查SourceLang是否为 "auto"
+		if reqBody.SourceLang == "auto" || reqBody.SourceLang == "AUTO" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Auto-detect source language is not supported"})
 			return
 		}
 
@@ -44,12 +48,9 @@ func InitRouter() *gin.Engine {
 			reqBody.Quality = "normal"
 		}
 
-		log.Printf("Received translation request: %+v", reqBody)
-
 		// 调用翻译函数
 		result, err := translator.Translate(reqBody.Text, reqBody.SourceLang, reqBody.TargetLang, reqBody.Quality, 0)
 		if err != nil || result == "" {
-			log.Printf("Translation failed: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Translation failed", "details": err.Error()})
 			return
 		}
@@ -64,7 +65,6 @@ func InitRouter() *gin.Engine {
 			"target_lang":  reqBody.TargetLang,
 			"quality":      reqBody.Quality,
 		}
-		log.Printf("Translation success: %+v", response)
 		c.JSON(http.StatusOK, response)
 	})
 
