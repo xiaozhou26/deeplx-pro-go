@@ -47,7 +47,7 @@ func getRandomNumber() int64 {
 }
 
 func getTimestamp(iCount int) int64 {
-	ts := time.Now().Unix()
+	ts := time.Now().UnixNano() / int64(time.Millisecond)
 	if iCount == 0 {
 		return ts
 	}
@@ -55,56 +55,56 @@ func getTimestamp(iCount int) int64 {
 	return ts - (ts % int64(iCount)) + int64(iCount)
 }
 
-type TranslateParams struct {
-	Jobs            []Job      `json:"jobs"`
-	Lang            LangParams `json:"lang"`
+type translateParams struct {
+	Jobs            []job      `json:"jobs"`
+	Lang            langParams `json:"lang"`
 	Priority        int        `json:"priority"`
-	CommonJobParams JobParams  `json:"commonJobParams"`
+	CommonJobParams jobParams  `json:"commonJobParams"`
 	Timestamp       int64      `json:"timestamp"`
 }
 
-type Job struct {
+type job struct {
 	Kind               string     `json:"kind"`
-	Sentences          []Sentence `json:"sentences"`
+	Sentences          []sentence `json:"sentences"`
 	RawEnContextBefore []string   `json:"raw_en_context_before"`
 	RawEnContextAfter  []string   `json:"raw_en_context_after"`
 	PreferredNumBeams  int        `json:"preferred_num_beams"`
 }
 
-type Sentence struct {
+type sentence struct {
 	Text   string `json:"text"`
 	ID     int    `json:"id"`
 	Prefix string `json:"prefix"`
 }
 
-type JobParams struct {
+type jobParams struct {
 	Quality         string `json:"quality"`
-	RegionalVariant string `json:"regional_variant"`
+	RegionalVariant string `json:"regionalVariant"`
 	Mode            string `json:"mode"`
-	BrowserType     int    `json:"browser_type"`
-	TextType        string `json:"text_type"`
-	AdvancedMode    bool   `json:"advanced_mode"`
+	BrowserType     int    `json:"browserType"`
+	TextType        string `json:"textType"`
+	AdvancedMode    bool   `json:"advancedMode"`
 }
 
-type LangParams struct {
+type langParams struct {
 	TargetLang         string     `json:"target_lang"`
-	Preference         Preference `json:"preference"`
+	Preference         preference `json:"preference"`
 	SourceLangComputed string     `json:"source_lang_computed"`
 }
 
-type Preference struct {
+type preference struct {
 	Weight  map[string]interface{} `json:"weight"`
 	Default string                 `json:"default"`
 }
 
-type TranslateRequest struct {
+type translateRequest struct {
 	Jsonrpc string          `json:"jsonrpc"`
 	Method  string          `json:"method"`
 	ID      int64           `json:"id"`
-	Params  TranslateParams `json:"params"`
+	Params  translateParams `json:"params"`
 }
 
-type TranslateResponse struct {
+type translateResponse struct {
 	Result struct {
 		Translations []struct {
 			Beams []struct {
@@ -158,15 +158,15 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 		headers[k] = v
 	}
 
-	postData := TranslateRequest{
+	postData := translateRequest{
 		Jsonrpc: "2.0",
 		Method:  "LMT_handle_jobs",
 		ID:      id,
-		Params: TranslateParams{
-			Jobs: []Job{
+		Params: translateParams{
+			Jobs: []job{
 				{
 					Kind: "default",
-					Sentences: []Sentence{
+					Sentences: []sentence{
 						{
 							Text:   text,
 							ID:     1,
@@ -178,16 +178,16 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 					PreferredNumBeams:  4,
 				},
 			},
-			Lang: LangParams{
+			Lang: langParams{
 				TargetLang: targetLang,
-				Preference: Preference{
+				Preference: preference{
 					Weight:  map[string]interface{}{},
 					Default: "default",
 				},
 				SourceLangComputed: sourceLang,
 			},
 			Priority: priority,
-			CommonJobParams: JobParams{
+			CommonJobParams: jobParams{
 				Quality:         quality,
 				RegionalVariant: "zh-Hans",
 				Mode:            "translate",
@@ -264,7 +264,7 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 		return "", err
 	}
 
-	var translateResp TranslateResponse
+	var translateResp translateResponse
 	if err := json.Unmarshal(body, &translateResp); err != nil {
 		return "", err
 	}
