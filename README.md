@@ -22,20 +22,30 @@ docker pull xiaoxiaofeihh/deeplx-pro-go:latest
 ![DeepL翻译API示例代码](https://jsd.cdn.zzko.cn/gh/xiaozhou26/tuph@main/images/2024-03-07%20120245.png)
 
 ```bash
-docker run -d -p 9000:9000 -e COOKIE_VALUE="dl_session=你的dl_session" --name deeplx_pro xiaoxiaofeihh/deeplx-pro-go:latest
+docker run -d --name deeplx-pro -p 9000:9000 -e DEEPL_COOKIES="" xiaoxiaofeihh/deeplx-pro-go:latest
 ```
+### 注：多并发只要有一个cookie失效都会影响服务
+DEEPL_COOKIES=你的dl_seesion值，用,隔开
+列如DEEPL_COOKIES="1560565165-1811-481,515156-561561-11651"
 
-然后使用http://localhost:9000/translate
-就可以愉快使用了
+### 使用
 
-## 构建你自己的镜像
+- [使用API教程](https://github.com/xiaozhou26/deeplx/blob/main/API.md)
 
-如果你想要构建你自己的`deeplx-pro-go`镜像，你可以在仓库的根目录运行以下命令：
 
-```bash
-docker build -t deeplx-pro-go .
-```
+1. 替换代码中的 `cookie` 变量为你自己的 DeepL Pro cookie。
+2. 运行代码，启动 Express 服务器。
+3. 使用 POST 请求向 `http://localhost:9000/translate` 发送翻译请求，请求体包含以下字段：
+   - `text`：要翻译的文本
+   - `source_lang`：源语言（可选，默认为 'AUTO'）
+   - `target_lang`：目标语言（可选，默认为 'ZH'）
+   - `quality`: (字符串, 可选): 翻译质量。可以是 'normal' 或 'fast'。默认为 'normal'。
 
-## 问题和反馈
+4. 服务器将返回翻译结果的 JSON 响应。
 
-如果你在使用这个镜像时遇到了问题，或者你有任何反馈或建议，欢迎通过GitHub Issues向我们反馈。
+## 注意事项
+
+- 请不要频繁发送大量请求，否则可能会被 DeepL 暂时阻止 IP。
+- 本代码仅供学习和参考，请勿用于商业用途。
+- 使用 DeepL 时，请遵守其使用条款和限制。
+
