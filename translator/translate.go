@@ -245,7 +245,9 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 
 	resp, err := client.Do(req)
 	if err != nil {
-		MarkProxyInvalid(proxy)
+		if proxy != "" {
+			MarkProxyInvalid(proxy)
+		}
 		markCookieInvalid(cookie)
 		log.Println("Retrying due to proxy or cookie error...")
 		return Translate(text, sourceLang, targetLang, quality, tryCount+1)
