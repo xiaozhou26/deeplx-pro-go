@@ -37,12 +37,6 @@ func InitRouter() *gin.Engine {
 			return
 		}
 
-		// 检查SourceLang是否为 "auto"
-		if reqBody.SourceLang == "auto" || reqBody.SourceLang == "AUTO" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Auto-detect source language is not supported"})
-			return
-		}
-
 		// 如果Quality为空，设置为默认值 "normal"
 		if reqBody.Quality == "" {
 			reqBody.Quality = "normal"
