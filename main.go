@@ -15,10 +15,7 @@ import (
 
 func main() {
 	// 加载环境变量
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
+	godotenv.Load()
 
 	// 初始化配置
 	config.InitConfig()
