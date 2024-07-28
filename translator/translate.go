@@ -47,7 +47,7 @@ func getRandomNumber() int64 {
 }
 
 func getTimestamp(iCount int) int64 {
-	ts := time.Now().Unix()
+	ts := time.Now().UnixNano() / int64(time.Millisecond)
 	if iCount == 0 {
 		return ts
 	}
@@ -55,35 +55,70 @@ func getTimestamp(iCount int) int64 {
 	return ts - (ts % int64(iCount)) + int64(iCount)
 }
 
-type TranslateParams struct {
-	Texts     []Text     `json:"texts"`
-	Splitting string     `json:"splitting"`
-	Lang      LangParams `json:"lang"`
-	Timestamp int64      `json:"timestamp"`
+type translateParams struct {
+	Jobs            []job      `json:"jobs"`
+	Lang            langParams `json:"lang"`
+	Priority        int        `json:"priority"`
+	CommonJobParams jobParams  `json:"commonJobParams"`
+	Timestamp       int64      `json:"timestamp"`
 }
 
-type Text struct {
-	Text                string `json:"text"`
-	RequestAlternatives int    `json:"request_alternatives"`
+type job struct {
+	Kind               string     `json:"kind"`
+	Sentences          []sentence `json:"sentences"`
+	RawEnContextBefore []string   `json:"raw_en_context_before"`
+	RawEnContextAfter  []string   `json:"raw_en_context_after"`
+	PreferredNumBeams  int        `json:"preferred_num_beams"`
 }
 
-type LangParams struct {
-	SourceLangUserSelected string `json:"source_lang_user_selected"`
-	TargetLang             string `json:"target_lang"`
+type sentence struct {
+	Text   string `json:"text"`
+	ID     int    `json:"id"`
+	Prefix string `json:"prefix"`
 }
 
-type TranslateRequest struct {
+type jobParams struct {
+	Quality         string `json:"quality"`
+	RegionalVariant string `json:"regionalVariant"`
+	Mode            string `json:"mode"`
+	BrowserType     int    `json:"browserType"`
+	TextType        string `json:"textType"`
+	AdvancedMode    bool   `json:"advancedMode"`
+}
+
+type langParams struct {
+	TargetLang         string     `json:"target_lang"`
+	Preference         preference `json:"preference"`
+	SourceLangComputed string     `json:"source_lang_computed"`
+}
+
+type preference struct {
+	Weight  map[string]interface{} `json:"weight"`
+	Default string                 `json:"default"`
+}
+
+type translateRequest struct {
 	Jsonrpc string          `json:"jsonrpc"`
 	Method  string          `json:"method"`
 	ID      int64           `json:"id"`
-	Params  TranslateParams `json:"params"`
+	Params  translateParams `json:"params"`
 }
 
-type TranslateResponse struct {
+type translateResponse struct {
 	Result struct {
-		Texts []struct {
-			Text string `json:"text"`
-		} `json:"texts"`
+		Translations []struct {
+			Beams []struct {
+				Sentences []struct {
+					Text string `json:"text"`
+				} `json:"sentences"`
+				NumSymbols int `json:"num_symbols"`
+			} `json:"beams"`
+			Quality string `json:"quality"`
+		} `json:"translations"`
+		TargetLang            string                 `json:"target_lang"`
+		SourceLang            string                 `json:"source_lang"`
+		SourceLangIsConfident bool                   `json:"source_lang_is_confident"`
+		DetectedLanguages     map[string]interface{} `json:"detectedLanguages"`
 	} `json:"result"`
 }
 
@@ -92,7 +127,11 @@ func InitTranslator() {
 	initProxies()
 }
 
-func Translate(text, sourceLang, targetLang string, numberAlternative, tryCount int) (string, error) {
+func Translate(text, sourceLang, targetLang, quality string, tryCount int) (string, error) {
+	if quality == "" {
+		quality = "normal"
+	}
+
 	iCount := getICount(text)
 	id := getRandomNumber()
 	proxy, _ := GetNextProxy()
@@ -107,21 +146,57 @@ func Translate(text, sourceLang, targetLang string, numberAlternative, tryCount 
 		return "", fmt.Errorf("max retry limit reached")
 	}
 
+	priority := 1
+	advancedMode := false
+	if sourceLang == "EN" || sourceLang == "ZH" {
+		advancedMode = true
+	}
+	if quality == "fast" {
+		priority = -1
+		advancedMode = false
+	}
+
 	headers := make(map[string]string)
 	for k, v := range baseHeaders {
 		headers[k] = v
 	}
 
-	postData := TranslateRequest{
+	postData := translateRequest{
 		Jsonrpc: "2.0",
-		Method:  "LMT_handle_texts",
+		Method:  "LMT_handle_jobs",
 		ID:      id,
-		Params: TranslateParams{
-			Texts:     []Text{{Text: text, RequestAlternatives: numberAlternative}},
-			Splitting: "newlines",
-			Lang: LangParams{
-				SourceLangUserSelected: sourceLang,
-				TargetLang:             targetLang,
+		Params: translateParams{
+			Jobs: []job{
+				{
+					Kind: "default",
+					Sentences: []sentence{
+						{
+							Text:   text,
+							ID:     1,
+							Prefix: "",
+						},
+					},
+					RawEnContextBefore: []string{},
+					RawEnContextAfter:  []string{},
+					PreferredNumBeams:  4,
+				},
+			},
+			Lang: langParams{
+				TargetLang: targetLang,
+				Preference: preference{
+					Weight:  map[string]interface{}{},
+					Default: "default",
+				},
+				SourceLangComputed: sourceLang,
+			},
+			Priority: priority,
+			CommonJobParams: jobParams{
+				Quality:         quality,
+				RegionalVariant: "zh-Hans",
+				Mode:            "translate",
+				BrowserType:     1,
+				TextType:        "plaintext",
+				AdvancedMode:    advancedMode,
 			},
 			Timestamp: getTimestamp(iCount),
 		},
@@ -173,10 +248,12 @@ func Translate(text, sourceLang, targetLang string, numberAlternative, tryCount 
 
 	resp, err := client.Do(req)
 	if err != nil {
-		MarkProxyInvalid(proxy)
+		if proxy != "" {
+			MarkProxyInvalid(proxy)
+		}
 		markCookieInvalid(cookie)
 		log.Println("Retrying due to proxy or cookie error...")
-		return Translate(text, sourceLang, targetLang, numberAlternative, tryCount+1)
+		return Translate(text, sourceLang, targetLang, quality, tryCount+1)
 	}
 	defer resp.Body.Close()
 
@@ -190,14 +267,22 @@ func Translate(text, sourceLang, targetLang string, numberAlternative, tryCount 
 		return "", err
 	}
 
-	var translateResp TranslateResponse
+	var translateResp translateResponse
 	if err := json.Unmarshal(body, &translateResp); err != nil {
 		return "", err
 	}
 
-	if len(translateResp.Result.Texts) == 0 {
+	if len(translateResp.Result.Translations) == 0 || len(translateResp.Result.Translations[0].Beams) == 0 {
 		return "", fmt.Errorf("translation failed")
 	}
 
-	return translateResp.Result.Texts[0].Text, nil
+	// 提取第一个翻译结果
+	translatedText := translateResp.Result.Translations[0].Beams[0].Sentences[0].Text
+
+	// 检查翻译结果是否为空
+	if translatedText == "" {
+		return "", fmt.Errorf("translation result is empty")
+	}
+
+	return translatedText, nil
 }

@@ -14,7 +14,8 @@ var currentProxyIndex int
 func validateProxies() {
 	proxyStr := os.Getenv("PROXY_LIST")
 	if proxyStr == "" {
-		log.Fatal("No proxies provided. Please check your PROXY_LIST environment variable.")
+		log.Println("No proxies provided. Proceeding without proxies.")
+		return
 	}
 	proxyList := strings.Split(proxyStr, ",")
 	for _, proxy := range proxyList {
@@ -22,11 +23,14 @@ func validateProxies() {
 		proxies = append(proxies, proxy)
 	}
 	if len(proxies) == 0 {
-		log.Fatal("No valid proxies provided. Please check your PROXY_LIST environment variable.")
+		log.Println("No valid proxies provided. Proceeding without proxies.")
 	}
 }
 
 func GetNextProxy() (string, error) {
+	if len(proxies) == 0 {
+		return "", nil
+	}
 	attempts := 0
 	for attempts < len(proxies) {
 		proxy := proxies[currentProxyIndex]
