@@ -48,6 +48,7 @@ func main() {
 			Text       string `json:"text"`
 			SourceLang string `json:"source_lang"`
 			TargetLang string `json:"target_lang"`
+			Quality    string `json:"quality"`
 		}
 
 		// 绑定JSON请求体
@@ -57,10 +58,14 @@ func main() {
 			return
 		}
 
+		// 如果Quality为空，设置为默认值 "normal"
+		if reqBody.Quality == "" {
+			reqBody.Quality = "normal"
+		}
+
 		// 调用翻译函数
-		result, err := translator.Translate(reqBody.Text, reqBody.SourceLang, reqBody.TargetLang, 0, 0)
+		result, err := translator.Translate(reqBody.Text, reqBody.SourceLang, reqBody.TargetLang, reqBody.Quality, 0)
 		if err != nil || result == "" {
-			log.Printf("Translation failed: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Translation failed", "details": err.Error()})
 			return
 		}
@@ -73,6 +78,7 @@ func main() {
 			"id":           rand.Intn(10000000000),
 			"source_lang":  reqBody.SourceLang,
 			"target_lang":  reqBody.TargetLang,
+			"quality":      reqBody.Quality,
 		}
 		c.JSON(http.StatusOK, response)
 	})
