@@ -147,7 +147,10 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 	}
 
 	priority := 1
-	advancedMode := true
+	advancedMode := false
+	if sourceLang == "EN" || sourceLang == "ZH" {
+		advancedMode = true
+	}
 	if quality == "fast" {
 		priority = -1
 		advancedMode = false
@@ -275,6 +278,11 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 
 	// 提取第一个翻译结果
 	translatedText := translateResp.Result.Translations[0].Beams[0].Sentences[0].Text
+
+	// 检查翻译结果是否为空
+	if translatedText == "" {
+		return "", fmt.Errorf("translation result is empty")
+	}
 
 	return translatedText, nil
 }
