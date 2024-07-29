@@ -1,6 +1,10 @@
 
 # deeplx-pro-go
 
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxiaozhou26%2Fdeeplx-pro-go&env=DEEPL_COOKIES&project-name=deeplx-pro-go&repository-name=deeplx-pro-go)
+
+
 使用 DeepL Pro的翻译服务
 
 # 直接使用，畅行无阻。
