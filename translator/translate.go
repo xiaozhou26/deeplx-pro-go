@@ -151,6 +151,10 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 	if sourceLang == "EN" || sourceLang == "ZH" {
 		advancedMode = true
 	}
+	regionalVariant := "zh-Hans"
+	if targetLang == "EN" {
+		regionalVariant = "en-US"
+	}
 	if quality == "fast" {
 		priority = -1
 		advancedMode = false
@@ -192,7 +196,7 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 			Priority: priority,
 			CommonJobParams: jobParams{
 				Quality:         quality,
-				RegionalVariant: "zh-Hans",
+				RegionalVariant: regionalVariant,
 				Mode:            "translate",
 				BrowserType:     1,
 				TextType:        "plaintext",
