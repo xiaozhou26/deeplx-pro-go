@@ -12,7 +12,7 @@ import (
 
 	http "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
-	"github.com/bogdanfinn/tls-client/profiles"
+	"github.com/xiaozhou26/tlsclient/tlsclient"
 )
 
 const deeplBaseURL = "https://api.deepl.com/jsonrpc"
@@ -214,7 +214,7 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 	jar := tls_client.NewCookieJar()
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeoutSeconds(30),
-		tls_client.WithClientProfile(profiles.Chrome_120),
+		tls_client.WithClientProfile(tlsclient.Chrome127()),
 		tls_client.WithNotFollowRedirects(),
 		tls_client.WithCookieJar(jar),
 	}
