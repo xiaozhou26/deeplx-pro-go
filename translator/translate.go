@@ -150,7 +150,8 @@ func Translate(text, sourceLang, targetLang, quality string, tryCount int) (stri
 
 	priority := 1
 	advancedMode := false
-	if sourceLang == "EN" || sourceLang == "ZH" {
+
+	if sourceLang == "EN" || sourceLang == "ZH" || targetLang == "JA" || targetLang == "DE" {
 		advancedMode = true
 	}
 	regionalVariant := "zh-Hans"

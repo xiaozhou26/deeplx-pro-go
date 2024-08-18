@@ -36,7 +36,10 @@ func InitRouter() *gin.Engine {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body", "details": err.Error()})
 			return
 		}
-
+		// 检查源语言是否为"auto"
+		if reqBody.SourceLang == "auto" || reqBody.SourceLang == "AUTO" {
+			reqBody.SourceLang = "EN"
+		}
 		// 如果Quality为空，设置为默认值 "normal"
 		if reqBody.Quality == "" {
 			reqBody.Quality = "normal"
