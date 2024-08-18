@@ -18,17 +18,19 @@ import (
 const deeplBaseURL = "https://api.deepl.com/jsonrpc"
 
 var baseHeaders = map[string]string{
-	"Content-Type":       "application/json",
 	"Accept":             "*/*",
 	"Accept-Language":    "en-US,en;q=0.9",
-	"sec-ch-ua":          `"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"`,
+	"Content-Type":       "application/json",
+	"Origin":             "https://www.deepl.com",
+	"Priority":           "u=1, i",
+	"Referer":            "https://www.deepl.com/",
+	"sec-ch-ua":          `"Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"`,
 	"sec-ch-ua-mobile":   "?0",
 	"sec-ch-ua-platform": `"Windows"`,
 	"sec-fetch-dest":     "empty",
 	"sec-fetch-mode":     "cors",
 	"sec-fetch-site":     "same-site",
-	"Referer":            "https://www.deepl.com/",
-	"Referrer-Policy":    "strict-origin-when-cross-origin",
+	"User-Agent":         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
 }
 
 func getICount(translateText string) int {
